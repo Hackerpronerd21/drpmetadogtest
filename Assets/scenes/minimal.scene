@@ -1,0 +1,498 @@
+{
+  "Id": "9f832399-4887-46b0-8f21-2ee284f538e2",
+  "GameObjects": [
+    {
+      "Id": "bfc59c12-1ed2-4f91-8956-a95a315eac3c",
+      "Name": "Sun",
+      "Rotation": "-0.0729315,0.4822396,0.1305433,0.8631827",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "DirectionalLight",
+          "FogMode": "Enabled",
+          "FogStrength": 1,
+          "LightColor": "0.94419,0.97767,1,1",
+          "Shadows": true,
+          "SkyColor": "0.2532,0.32006,0.35349,1"
+        }
+      ]
+    },
+    {
+      "Id": "00344a8c-fa5e-45ae-b12a-10bb781a1dc3",
+      "Name": "2D Skybox",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "SkyBox2D",
+          "SkyMaterial": "materials/skybox/light_test_sky_sunny03.vmat",
+          "Tint": "1,1,1,1"
+        },
+        {
+          "__type": "EnvmapProbe",
+          "Bounds": {
+            "Mins": "-512,-512,-512",
+            "Maxs": "512,512,512"
+          },
+          "Feathering": 0.02,
+          "Projection": "Sphere",
+          "Texture": "textures/cubemaps/default2.vtex",
+          "TintColor": "1,1,1,1"
+        }
+      ]
+    },
+    {
+      "Id": "6ad70641-3c6c-4402-9c85-9a4969af4764",
+      "Name": "Plane",
+      "Scale": "5,5,5",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "ModelRenderer",
+          "BodyGroups": 18446744073709551615,
+          "MaterialGroup": null,
+          "MaterialOverride": "materials/default.vmat",
+          "Model": "models/dev/plane.vmdl",
+          "RenderType": "On",
+          "Tint": "0.39546,0.51163,0.27128,1"
+        },
+        {
+          "__type": "BoxCollider",
+          "Center": "0,0,-5",
+          "IsTrigger": false,
+          "Scale": "100,100,10",
+          "Static": false,
+          "Surface": null
+        }
+      ]
+    },
+    {
+      "Id": "3ee1c9f4-07be-4e0b-8b23-67bee2d8ec8a",
+      "Name": "Camera",
+      "Position": "0,0,60",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "CameraComponent",
+          "BackgroundColor": "0.33333,0.46275,0.52157,1",
+          "ClearFlags": "All",
+          "FieldOfView": 90,
+          "IsMainCamera": true,
+          "Orthographic": false,
+          "Priority": 1,
+          "ZFar": 10000,
+          "ZNear": 10
+        },
+        {
+          "__type": "Tonemapping",
+          "ExposureCompensation": 0,
+          "MaximumExposure": 2,
+          "MinimumExposure": 1,
+          "Rate": 1
+        }
+      ]
+    },
+    {
+      "Id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "Name": "Player Controller",
+      "Position": "0,0,100",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkInterpolation": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.PlayerController",
+          "AccelerationTime": 0,
+          "AimStrengthBody": 1,
+          "AimStrengthEyes": 1,
+          "AimStrengthHead": 1,
+          "AirFriction": 0.1,
+          "AltMoveButton": "run",
+          "Body": {
+            "_type": "component",
+            "component_id": "f2b49a45-d5d0-4868-8e56-f85f9a989be6",
+            "go": "6b5cbc3e-e37c-4eb9-afa6-577469114047",
+            "component_type": "SkinnedModelRenderer"
+          },
+          "BodyHeight": 72,
+          "BodyMass": 500,
+          "BodyRadius": 16,
+          "BrakePower": 1,
+          "CameraOffset": "256,0,12",
+          "ColliderObject": {
+            "_type": "gameobject",
+            "go": "14c32c81-db65-4764-b235-8d1469a40438"
+          },
+          "DeaccelerationTime": 0,
+          "DuckedHeight": 36,
+          "DuckedSpeed": 70,
+          "EnableFootstepSounds": true,
+          "EnablePressing": true,
+          "EyeDistanceFromTop": 8,
+          "HideBodyInFirstPerson": true,
+          "JumpSpeed": 300,
+          "LookSensitivity": 1,
+          "PitchClamp": 90,
+          "ReachLength": 130,
+          "Renderer": {
+            "_type": "component",
+            "component_id": "f2b49a45-d5d0-4868-8e56-f85f9a989be6",
+            "go": "6b5cbc3e-e37c-4eb9-afa6-577469114047",
+            "component_type": "SkinnedModelRenderer"
+          },
+          "RotateWithGround": true,
+          "RotationAngleLimit": 45,
+          "RotationSpeed": 1,
+          "RunByDefault": false,
+          "RunSpeed": 320,
+          "ThirdPerson": true,
+          "ToggleCameraModeButton": "view",
+          "UseAnimatorControls": true,
+          "UseButton": "use",
+          "UseCameraControls": true,
+          "UseFovFromPreferences": true,
+          "UseInputControls": true,
+          "UseLookControls": true,
+          "WalkSpeed": 110
+        },
+        {
+          "__type": "Sandbox.Rigidbody",
+          "AngularDamping": 1,
+          "Gravity": true,
+          "LinearDamping": 0.1,
+          "Locking": {
+            "Pitch": true,
+            "Yaw": true,
+            "Roll": true
+          },
+          "MassCenterOverride": "0,0,36",
+          "MassOverride": 500,
+          "MotionEnabled": true,
+          "OverrideMassCenter": true,
+          "RigidbodyFlags": "DisableCollisionSounds",
+          "StartAsleep": false
+        },
+        {
+          "__type": "Sandbox.Movement.MoveModeWalk",
+          "GroundAngle": 45,
+          "Priority": 0,
+          "StepDownHeight": 18,
+          "StepUpHeight": 18
+        },
+        {
+          "__type": "Sandbox.Movement.MoveModeSwim",
+          "Priority": 10,
+          "SwimLevel": 0.7
+        },
+        {
+          "__type": "Sandbox.Movement.MoveModeLadder",
+          "ClimbableTags": "ladder",
+          "Priority": 5,
+          "Speed": 1
+        },
+        {
+          "__type": "Sandbox.Dresser",
+          "ApplyHeightScale": true,
+          "BodyTarget": {
+            "_type": "component",
+            "component_id": "f2b49a45-d5d0-4868-8e56-f85f9a989be6",
+            "go": "6b5cbc3e-e37c-4eb9-afa6-577469114047",
+            "component_type": "SkinnedModelRenderer"
+          },
+          "Clothing": [],
+          "ManualAge": 0.5,
+          "ManualHeight": 0.5,
+          "ManualTint": 0.5,
+          "Source": "OwnerConnection",
+          "WorkshopItems": []
+        },
+        {
+          "__type": "DarkRp.PlayerState"
+        },
+        {
+          "__type": "DarkRp.DarkRpInventory"
+        },
+        {
+          "__type": "DarkRp.ArrestInteraction",
+          "InteractRange": 150.0
+        },
+        {
+          "__type": "DarkRp.ChatSystem"
+        },
+        {
+          "__type": "DarkRp.ShopInteraction",
+          "ShopRange": 150.0
+        },
+        {
+          "__type": "DarkRp.DoorInteraction",
+          "LookRange": 200.0
+        },
+        {
+          "__type": "DarkRp.RespawnHandler",
+          "MaxHealth": 100.0,
+          "RespawnDelay": 5.0
+        }
+      ],
+      "Children": [
+        {
+          "Id": "6b5cbc3e-e37c-4eb9-afa6-577469114047",
+          "Name": "Body",
+          "Enabled": true,
+          "NetworkMode": 2,
+          "NetworkInterpolation": true,
+          "OwnerTransfer": 1,
+          "Components": [
+            {
+              "__type": "Sandbox.SkinnedModelRenderer",
+              "__guid": "f2b49a45-d5d0-4868-8e56-f85f9a989be6",
+              "BodyGroups": 341,
+              "Model": "models/citizen/citizen.vmdl",
+              "Morphs": {},
+              "PlaybackRate": 1,
+              "RenderType": "On",
+              "Tint": "1,1,1,1",
+              "UseAnimGraph": true
+            }
+          ]
+        },
+        {
+          "Id": "14c32c81-db65-4764-b235-8d1469a40438",
+          "Name": "Colliders",
+          "Enabled": true,
+          "Flags": 1,
+          "Components": [
+            {
+              "__type": "Sandbox.CapsuleCollider",
+              "End": "0,0,45.05097",
+              "Friction": 0,
+              "IsTrigger": false,
+              "Radius": 11.313708,
+              "Start": "0,0,60.68629",
+              "Static": false
+            },
+            {
+              "__type": "Sandbox.BoxCollider",
+              "Center": "0,0,18",
+              "Friction": 0,
+              "IsTrigger": false,
+              "Scale": "16,16,36",
+              "Static": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Id": "da000001-0000-0000-0000-da0000000001",
+      "Name": "GameManager",
+      "Enabled": true,
+      "NetworkMode": 1,
+      "Components": [
+        {
+          "__type": "DarkRp.DarkRpGameManager",
+          "PlayerPrefab": null,
+          "SpawnPoints": [
+            { "_type": "gameobject", "go": "da000002-0000-0000-0000-da0000000002" },
+            { "_type": "gameobject", "go": "da000003-0000-0000-0000-da0000000003" }
+          ]
+        },
+        {
+          "__type": "DarkRp.EconomySystem",
+          "SalaryInterval": 300.0
+        },
+        {
+          "__type": "DarkRp.ArrestSystem",
+          "JailSpawn": { "_type": "gameobject", "go": "da000004-0000-0000-0000-da0000000004" },
+          "JailDuration": 60.0
+        },
+        {
+          "__type": "DarkRp.MayorSystem"
+        }
+      ]
+    },
+    {
+      "Id": "da000002-0000-0000-0000-da0000000002",
+      "Name": "SpawnPoint_1",
+      "Position": "-100,0,4",
+      "Enabled": true,
+      "Components": [
+        { "__type": "SpawnPoint" }
+      ]
+    },
+    {
+      "Id": "da000003-0000-0000-0000-da0000000003",
+      "Name": "SpawnPoint_2",
+      "Position": "100,0,4",
+      "Enabled": true,
+      "Components": [
+        { "__type": "SpawnPoint" }
+      ]
+    },
+    {
+      "Id": "da000004-0000-0000-0000-da0000000004",
+      "Name": "JailSpawn",
+      "Position": "0,-220,4",
+      "Enabled": true,
+      "Components": []
+    },
+    {
+      "Id": "da000005-0000-0000-0000-da0000000005",
+      "Name": "HUD",
+      "Enabled": true,
+      "Components": [
+        { "__type": "DarkRp.DarkRpHud" }
+      ]
+    },
+    {
+      "Id": "da000006-0000-0000-0000-da0000000006",
+      "Name": "JobMenu",
+      "Enabled": true,
+      "Components": [
+        { "__type": "DarkRp.JobMenu" }
+      ]
+    },
+    {
+      "Id": "da000007-0000-0000-0000-da0000000007",
+      "Name": "ChatBox",
+      "Enabled": true,
+      "Components": [
+        { "__type": "DarkRp.ChatBox" }
+      ]
+    },
+    {
+      "Id": "da000008-0000-0000-0000-da0000000008",
+      "Name": "ShopMenu",
+      "Enabled": true,
+      "Components": [
+        { "__type": "DarkRp.ShopMenu" }
+      ]
+    },
+    {
+      "Id": "da000009-0000-0000-0000-da0000000009",
+      "Name": "InventoryHud",
+      "Enabled": true,
+      "Components": [
+        { "__type": "DarkRp.InventoryHud" }
+      ]
+    },
+    {
+      "Id": "da000010-0000-0000-0000-da0000000010",
+      "Name": "DoorPanel",
+      "Enabled": true,
+      "Components": [
+        { "__type": "DarkRp.DoorPanel" }
+      ]
+    },
+    {
+      "Id": "da000011-0000-0000-0000-da0000000011",
+      "Name": "MayorMenu",
+      "Enabled": true,
+      "Components": [
+        { "__type": "DarkRp.MayorMenu" }
+      ]
+    },
+    {
+      "Id": "da000012-0000-0000-0000-da0000000012",
+      "Name": "LawsHud",
+      "Enabled": true,
+      "Components": [
+        { "__type": "DarkRp.LawsHud" }
+      ]
+    },
+    {
+      "Id": "da000013-0000-0000-0000-da0000000013",
+      "Name": "ScoreboardHud",
+      "Enabled": true,
+      "Components": [
+        { "__type": "DarkRp.ScoreboardHud" }
+      ]
+    },
+    {
+      "Id": "db000001-0000-0000-0000-db0000000001",
+      "Name": "Door_Apartment1",
+      "Position": "0,90,36",
+      "Enabled": true,
+      "NetworkMode": 1,
+      "Tags": "door",
+      "Components": [
+        {
+          "__type": "DarkRp.DoorState",
+          "DoorLabel": "Apartment 1",
+          "DefaultPrice": 800
+        },
+        {
+          "__type": "BoxCollider",
+          "Center": "0,0,0",
+          "Scale": "8,4,72",
+          "Static": true
+        }
+      ]
+    },
+    {
+      "Id": "db000002-0000-0000-0000-db0000000002",
+      "Name": "Door_Apartment2",
+      "Position": "90,0,36",
+      "Enabled": true,
+      "NetworkMode": 1,
+      "Tags": "door",
+      "Components": [
+        {
+          "__type": "DarkRp.DoorState",
+          "DoorLabel": "Apartment 2",
+          "DefaultPrice": 1200
+        },
+        {
+          "__type": "BoxCollider",
+          "Center": "0,0,0",
+          "Scale": "8,4,72",
+          "Static": true
+        }
+      ]
+    },
+    {
+      "Id": "db000003-0000-0000-0000-db0000000003",
+      "Name": "Door_Storage",
+      "Position": "-90,0,36",
+      "Enabled": true,
+      "NetworkMode": 1,
+      "Tags": "door",
+      "Components": [
+        {
+          "__type": "DarkRp.DoorState",
+          "DoorLabel": "Storage Room",
+          "DefaultPrice": 600
+        },
+        {
+          "__type": "BoxCollider",
+          "Center": "0,0,0",
+          "Scale": "8,4,72",
+          "Static": true
+        }
+      ]
+    }
+  ],
+  "SceneProperties": {
+    "FixedUpdateFrequency": 50,
+    "Lerping": true,
+    "MaxFixedUpdates": 5,
+    "NetworkFrequency": 60,
+    "ThreadedAnimation": true,
+    "TimeScale": 1,
+    "UseFixedUpdate": true,
+    "NavMesh": {
+      "Enabled": false,
+      "IncludeStaticBodies": true,
+      "IncludeKeyframedBodies": true,
+      "EditorAutoUpdate": true,
+      "AgentHeight": 64,
+      "AgentRadius": 16,
+      "AgentStepSize": 18,
+      "AgentMaxSlope": 40,
+      "ExcludedBodies": "",
+      "IncludedBodies": ""
+    }
+  },
+  "Title": "minimal",
+  "Description": "",
+  "__references": []
+}

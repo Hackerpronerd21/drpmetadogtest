@@ -1,0 +1,127 @@
+@inherits PanelComponent
+@namespace DarkRp
+@using System.Linq
+
+@*
+    Inventory bar — bottom-center of screen.
+    Shows the local player's carried items as a horizontal strip.
+    Hidden when inventory is empty.
+
+    Each slot shows:
+      • A colored square (item accent color) with the item's first initial
+      • Item name
+      • Stack count (if > 1)
+
+    This is a placeholder UI. Replace the colored square with a proper icon
+    asset when models/icons are available in M8 polish.
+*@
+
+@{
+    var localState = Game.ActiveScene?
+        .GetAllComponents<PlayerState>()
+        .FirstOrDefault( s => s.Network.OwnerConnection == Connection.Local );
+
+    var inventory = localState?.Components.Get<DarkRpInventory>();
+    var slots     = inventory?.Slots ?? System.Array.Empty<InventorySlot>();
+}
+
+<root>
+    @if ( slots.Any() )
+    {
+        <div class="inv-bar">
+            @foreach ( var slot in slots )
+            {
+                var def = ItemRegistry.Exists( slot.ItemId )
+                    ? ItemRegistry.Get( slot.ItemId )
+                    : null;
+
+                string label    = def?.DisplayName ?? slot.ItemId;
+                Color  accent   = def?.Color ?? Color.Gray;
+                string initial  = label.Length > 0 ? label[0].ToString() : "?";
+
+                <div class="inv-slot">
+                    <div class="inv-icon" style="background-color: @Hex( accent )">
+                        <span class="inv-initial">@initial</span>
+                    </div>
+                    <div class="inv-info">
+                        <span class="inv-name">@label</span>
+                        @if ( slot.Count > 1 )
+                        {
+                            <span class="inv-count">×@slot.Count</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</root>
+
+@code {
+
+    static string Hex( Color c )
+        => $"#{(int)(c.r * 255):X2}{(int)(c.g * 255):X2}{(int)(c.b * 255):X2}";
+
+}
+
+<style>
+    /* ── Bar ─────────────────────────────────────────────────── */
+    .inv-bar {
+        position: absolute;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: row;
+        gap: 6px;
+        font-family: Poppins, sans-serif;
+    }
+
+    /* ── Slot ────────────────────────────────────────────────── */
+    .inv-slot {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 7px;
+        background-color: rgba(0, 0, 0, 0.65);
+        border-radius: 6px;
+        padding: 5px 10px 5px 6px;
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    /* ── Icon (colored square, placeholder for real icons) ───── */
+    .inv-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .inv-initial {
+        font-size: 14px;
+        font-weight: bold;
+        color: rgba(0, 0, 0, 0.75);
+        text-shadow: none;
+    }
+
+    /* ── Text ────────────────────────────────────────────────── */
+    .inv-info {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+
+    .inv-name {
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+        white-space: nowrap;
+    }
+
+    .inv-count {
+        font-size: 10px;
+        color: rgba(255,255,255,0.5);
+    }
+</style>

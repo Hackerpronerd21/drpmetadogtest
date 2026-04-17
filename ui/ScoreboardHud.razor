@@ -1,0 +1,184 @@
+@inherits PanelComponent
+@namespace DarkRp
+@using System.Linq
+
+@*
+    Scoreboard — held Tab.
+    Sorted by money descending. Shows all connected players.
+    Columns: Rank · Name · Job · Money · Status
+*@
+
+@{
+    bool show = Input.Down( "Score" );
+
+    var rows = show
+        ? Game.ActiveScene?
+              .GetAllComponents<PlayerState>()
+              .OrderByDescending( s => s.Money )
+              .ToList()
+        : null;
+}
+
+<root>
+    @if ( show && rows is not null )
+    {
+        <div class="sb-overlay">
+            <div class="sb-panel">
+
+                <div class="sb-header">
+                    <span class="sb-title">Scoreboard</span>
+                    <span class="sb-count">@rows.Count player@(rows.Count != 1 ? "s" : "")</span>
+                </div>
+
+                <div class="sb-table">
+                    <div class="sb-row sb-heading">
+                        <span class="sb-col sb-rank">#</span>
+                        <span class="sb-col sb-name">Name</span>
+                        <span class="sb-col sb-job">Job</span>
+                        <span class="sb-col sb-money">Money</span>
+                        <span class="sb-col sb-status">Status</span>
+                    </div>
+
+                    @for ( int i = 0; i < rows.Count; i++ )
+                    {
+                        var s    = rows[i];
+                        var job  = s.Job;
+                        string playerName = s.Network.OwnerConnection?.DisplayName ?? "?";
+                        string status = s.IsArrested ? "ARRESTED"
+                                      : s.IsWanted   ? "WANTED"
+                                      :                "";
+                        string statusClass = s.IsArrested ? "sb-status-arrested"
+                                           : s.IsWanted   ? "sb-status-wanted"
+                                           :                "";
+                        int rank = i + 1;
+
+                        <div class="sb-row @(rank % 2 == 0 ? "sb-row-alt" : "")">
+                            <span class="sb-col sb-rank">@rank</span>
+                            <span class="sb-col sb-name">@playerName</span>
+                            <span class="sb-col sb-job" style="color: @ColorToHex(job.Color);">@job.DisplayName</span>
+                            <span class="sb-col sb-money">$@s.Money</span>
+                            <span class="sb-col sb-status @statusClass">@status</span>
+                        </div>
+                    }
+                </div>
+
+                <div class="sb-footer">Release TAB to close</div>
+            </div>
+        </div>
+    }
+</root>
+
+@code {
+
+    static string ColorToHex( Color c )
+    {
+        int r = (int)( c.r * 255 );
+        int g = (int)( c.g * 255 );
+        int b = (int)( c.b * 255 );
+        return $"#{r:X2}{g:X2}{b:X2}";
+    }
+
+}
+
+<style>
+    /* ── Overlay ─────────────────────────────────────────────── */
+    .sb-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding-top: 60px;
+        background-color: rgba(0, 0, 0, 0.45);
+    }
+
+    /* ── Panel ───────────────────────────────────────────────── */
+    .sb-panel {
+        width: 680px;
+        max-height: 75%;
+        background-color: rgba(15, 17, 22, 0.95);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        font-family: Poppins, sans-serif;
+    }
+
+    /* ── Header ──────────────────────────────────────────────── */
+    .sb-header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 20px;
+        background-color: rgba(0,0,0,0.4);
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .sb-title {
+        font-size: 15px;
+        font-weight: bold;
+        color: rgba(255,255,255,0.9);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .sb-count {
+        font-size: 11px;
+        color: rgba(255,255,255,0.35);
+    }
+
+    /* ── Table ───────────────────────────────────────────────── */
+    .sb-table {
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .sb-row {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 7px 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .sb-row-alt { background-color: rgba(255,255,255,0.025); }
+
+    .sb-heading {
+        background-color: rgba(0,0,0,0.3);
+        padding: 6px 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .sb-heading .sb-col {
+        font-size: 9px;
+        font-weight: bold;
+        color: rgba(255,255,255,0.35);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+
+    /* ── Columns ─────────────────────────────────────────────── */
+    .sb-col { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+    .sb-rank   { width: 36px;  font-size: 12px; color: rgba(255,255,255,0.3); }
+    .sb-name   { flex: 1;      font-size: 13px; color: rgba(255,255,255,0.85); }
+    .sb-job    { width: 120px; font-size: 12px; }
+    .sb-money  { width: 100px; font-size: 13px; color: #5dde8f; font-weight: bold; }
+    .sb-status { width: 90px;  font-size: 11px; font-weight: bold; text-align: right; }
+
+    .sb-status-wanted   { color: #ffb347; }
+    .sb-status-arrested { color: #6ab0ff; }
+
+    /* ── Footer ──────────────────────────────────────────────── */
+    .sb-footer {
+        padding: 8px 20px;
+        font-size: 10px;
+        color: rgba(255,255,255,0.2);
+        background-color: rgba(0,0,0,0.3);
+        border-top: 1px solid rgba(255,255,255,0.05);
+        text-align: center;
+    }
+</style>

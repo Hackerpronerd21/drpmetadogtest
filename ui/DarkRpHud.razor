@@ -1,0 +1,153 @@
+@inherits PanelComponent
+@namespace DarkRp
+@using System.Linq;
+
+@*
+    DarkRP HUD — bottom-left money/job/status bar.
+
+    Attach this component directly to any GameObject in your scene.
+    Because it inherits PanelComponent it renders to screen space automatically.
+    No ScreenPanel parent required.
+*@
+
+@{
+    // Compute once per render — avoids multiple separate scene scans per frame.
+    var state   = Game.ActiveScene?
+        .GetAllComponents<PlayerState>()
+        .FirstOrDefault( s => s.Network.OwnerConnection == Connection.Local );
+
+    var respawn = state?.Components.Get<RespawnHandler>();
+    float hp    = respawn?.Health    ?? 100f;
+    float maxHp = respawn?.MaxHealth ?? 100f;
+    bool isDead = respawn?.IsDead    ?? false;
+    float hpPct = maxHp > 0f ? hp / maxHp : 1f;
+
+    string hpColor = hpPct > 0.5f  ? "#5dde8f"
+                   : hpPct > 0.25f ? "#ffd966"
+                   :                 "#ff5555";
+}
+
+<root>
+    @if ( isDead )
+    {
+        <div class="drp-dead-overlay">
+            <span class="drp-dead-text">YOU DIED</span>
+            <span class="drp-dead-sub">Respawning…</span>
+        </div>
+    }
+
+    @if ( state is not null && !isDead )
+    {
+        <div class="drp-hud">
+
+            <div class="drp-block drp-health">
+                <span class="drp-label">HEALTH</span>
+                <span class="drp-value" style="color: @hpColor;">@((int)hp)</span>
+            </div>
+
+            <div class="drp-block drp-money">
+                <span class="drp-label">MONEY</span>
+                <span class="drp-value">${@state.Money}</span>
+            </div>
+
+            <div class="drp-block drp-job" style="color: @ColorToHex( state.Job.Color )">
+                <span class="drp-label">JOB</span>
+                <span class="drp-value">@state.Job.DisplayName</span>
+            </div>
+
+            @if ( state.IsWanted )
+            {
+                <div class="drp-block drp-status drp-wanted">
+                    <span>WANTED</span>
+                </div>
+            }
+
+            @if ( state.IsArrested )
+            {
+                <div class="drp-block drp-status drp-arrested">
+                    <span>ARRESTED</span>
+                </div>
+            }
+
+        </div>
+    }
+</root>
+
+@code {
+
+    static string ColorToHex( Color c )
+        => $"#{(int)(c.r * 255):X2}{(int)(c.g * 255):X2}{(int)(c.b * 255):X2}";
+
+}
+
+<style>
+    .drp-hud {
+        position: absolute;
+        bottom: 24px;
+        left: 24px;
+        display: flex;
+        flex-direction: row;
+        gap: 12px;
+        font-family: Poppins, sans-serif;
+    }
+
+    .drp-block {
+        background-color: rgba(0, 0, 0, 0.65);
+        border-radius: 6px;
+        padding: 6px 14px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 80px;
+    }
+
+    .drp-label {
+        font-size: 9px;
+        color: rgba(255, 255, 255, 0.5);
+        letter-spacing: 1px;
+    }
+
+    .drp-value {
+        font-size: 16px;
+        font-weight: bold;
+        color: white;
+    }
+
+    .drp-money .drp-value { color: #4cff7a; }
+
+    .drp-status {
+        font-size: 14px;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+
+    .drp-wanted   { background-color: rgba(255, 80, 30, 0.8); }
+    .drp-arrested { background-color: rgba(30, 80, 255, 0.8); }
+
+    /* ── Death overlay ───────────────────────────────────────── */
+    .drp-dead-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.55);
+        pointer-events: none;
+    }
+
+    .drp-dead-text {
+        font-family: Poppins, sans-serif;
+        font-size: 64px;
+        font-weight: bold;
+        color: #ff4444;
+        letter-spacing: 4px;
+    }
+
+    .drp-dead-sub {
+        font-family: Poppins, sans-serif;
+        font-size: 18px;
+        color: rgba(255, 255, 255, 0.5);
+        margin-top: 10px;
+    }
+</style>

@@ -1,0 +1,183 @@
+@inherits PanelComponent
+@namespace DarkRp
+@using System.Linq
+
+@*
+    Chat box — bottom-right corner.
+
+    Enter      — opens text input (if closed) / submits message (if open)
+    Escape     — cancels input without sending
+    Chat history shows the last 15 messages.
+    All message routing goes through ChatSystem.SendMessage [Rpc.Host].
+*@
+
+<root>
+    <div class="cb-root">
+
+        <div class="cb-history @(IsTyping ? "cb-history-tall" : "")">
+            @foreach ( var msg in ChatSystem.History.TakeLast( 15 ) )
+            {
+                <div class="cb-line">
+                    <span class="cb-name" style="color: @Hex( msg.JobColor )">
+                        @msg.SenderName
+                    </span>
+                    <span class="cb-sep">: </span>
+                    <span class="cb-text">@msg.Text</span>
+                </div>
+            }
+        </div>
+
+        @if ( IsTyping )
+        {
+            <div class="cb-input-row">
+                <span class="cb-prompt">Say:</span>
+                <input class="cb-input"
+                       type="text"
+                       maxlength="256"
+                       placeholder="type a message or /command…"
+                       value="@CurrentInput"
+                       autofocus
+                       @oninput="@(e => CurrentInput = e.Value?.ToString() ?? string.Empty)"
+                       @onkeydown="OnKeyDown" />
+            </div>
+        }
+
+    </div>
+</root>
+
+@code {
+
+    bool   IsTyping     { get; set; }
+    string CurrentInput { get; set; } = string.Empty;
+
+    protected override void OnUpdate()
+    {
+        // "Chat" action (Enter) opens the input when we're not already typing.
+        // Submitting is handled in OnKeyDown so the engine doesn't re-open
+        // the box on the same frame the user presses Enter to submit.
+        if ( !IsTyping && Input.Pressed( "Chat" ) )
+            Open();
+    }
+
+    void Open()
+    {
+        IsTyping    = true;
+        Mouse.Visible = true;
+        StateHasChanged();
+    }
+
+    void Cancel()
+    {
+        IsTyping      = false;
+        CurrentInput  = string.Empty;
+        Mouse.Visible = false;
+        StateHasChanged();
+    }
+
+    void Submit()
+    {
+        var text = CurrentInput.Trim();
+        if ( !string.IsNullOrEmpty( text ) )
+        {
+            // Find the local player's ChatSystem and send via [Rpc.Host].
+            var chat = Game.ActiveScene?
+                .GetAllComponents<ChatSystem>()
+                .FirstOrDefault( c => c.Network.OwnerConnection == Connection.Local );
+
+            chat?.SendMessage( text );
+        }
+        Cancel();
+    }
+
+    void OnKeyDown( KeyboardEventArgs e )
+    {
+        switch ( e.Key )
+        {
+            case "Enter": Submit();  break;
+            case "Escape": Cancel(); break;
+        }
+    }
+
+    static string Hex( Color c )
+        => $"#{(int)(c.r * 255):X2}{(int)(c.g * 255):X2}{(int)(c.b * 255):X2}";
+
+}
+
+<style>
+    /* ── Root ────────────────────────────────────────────────── */
+    .cb-root {
+        position: absolute;
+        bottom: 24px;
+        right: 24px;
+        width: 400px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-family: Poppins, sans-serif;
+    }
+
+    /* ── Message history ─────────────────────────────────────── */
+    .cb-history {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        max-height: 160px;
+        overflow: hidden;
+    }
+
+    .cb-history-tall {
+        max-height: 220px;
+    }
+
+    .cb-line {
+        font-size: 12px;
+        line-height: 1.4;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.9);
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .cb-name {
+        font-weight: bold;
+    }
+
+    .cb-sep {
+        color: rgba(255,255,255,0.5);
+    }
+
+    .cb-text {
+        color: rgba(255,255,255,0.9);
+    }
+
+    /* ── Input row ───────────────────────────────────────────── */
+    .cb-input-row {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
+        background-color: rgba(0, 0, 0, 0.7);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 6px;
+        padding: 5px 10px;
+    }
+
+    .cb-prompt {
+        font-size: 11px;
+        color: rgba(255,255,255,0.5);
+        flex-shrink: 0;
+    }
+
+    .cb-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 13px;
+        outline: none;
+        font-family: Poppins, sans-serif;
+    }
+
+    .cb-input::placeholder {
+        color: rgba(255,255,255,0.3);
+    }
+</style>

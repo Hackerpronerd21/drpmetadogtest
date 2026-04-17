@@ -1,0 +1,304 @@
+@inherits PanelComponent
+@namespace DarkRp
+@using System.Linq
+
+@*
+    Dealer shop — opens when a player presses E near a seller.
+    ShopInteraction fires ShopOpenRequested; this panel subscribes.
+
+    Layout mirrors JobMenu: color stripe, name, description, price, buy button.
+    F5 or Escape closes. The panel is invisible while closed.
+*@
+
+@{
+    var items = CurrentDealer is not null
+        ? ItemRegistry.GetDealerStock( CurrentDealer.JobId ).ToList()
+        : new();
+
+    var localState = Game.ActiveScene?
+        .GetAllComponents<PlayerState>()
+        .FirstOrDefault( s => s.Network.OwnerConnection == Connection.Local );
+}
+
+<root>
+    @if ( IsOpen && CurrentDealer is not null )
+    {
+        <div class="sm-overlay">
+            <div class="sm-panel">
+
+                <div class="sm-header">
+                    <div class="sm-title-block">
+                        <span class="sm-title">
+                            @CurrentDealer.Job.DisplayName's Shop
+                        </span>
+                        <span class="sm-subtitle">
+                            Your balance: <strong style="color:#4cff7a">$@( localState?.Money ?? 0 )</strong>
+                        </span>
+                    </div>
+                    <button class="sm-close-btn" @onclick="Close">✕</button>
+                </div>
+
+                <div class="sm-grid">
+                    @foreach ( var item in items )
+                    {
+                        var canAfford = ( localState?.Money ?? 0 ) >= item.Price;
+
+                        <div class="sm-card @(!canAfford ? "sm-broke" : "")">
+                            <div class="sm-stripe" style="background-color: @Hex( item.Color )"></div>
+                            <div class="sm-body">
+                                <div class="sm-name" style="color: @Hex( item.Color )">@item.DisplayName</div>
+                                <div class="sm-desc">@item.Description</div>
+                                <div class="sm-meta">
+                                    <span class="sm-cat">@item.Category</span>
+                                    @if ( item.MaxStack > 1 )
+                                    {
+                                        <span class="sm-stack">stacks to @item.MaxStack</span>
+                                    }
+                                </div>
+                            </div>
+                            <button class="sm-buy-btn @(!canAfford ? "sm-buy-disabled" : "")"
+                                    @onclick="() => BuyItem( item.Id )">
+                                $@item.Price
+                            </button>
+                        </div>
+                    }
+
+                    @if ( items.Count == 0 )
+                    {
+                        <div class="sm-empty">This dealer has no stock available.</div>
+                    }
+                </div>
+
+                <div class="sm-footer">E or Escape to close</div>
+            </div>
+        </div>
+    }
+</root>
+
+@code {
+
+    bool        IsOpen        { get; set; }
+    PlayerState? CurrentDealer { get; set; }
+
+    protected override void OnStart()
+    {
+        ShopInteraction.ShopOpenRequested += OpenFor;
+    }
+
+    protected override void OnDestroy()
+    {
+        ShopInteraction.ShopOpenRequested -= OpenFor;
+    }
+
+    protected override void OnUpdate()
+    {
+        if ( IsOpen && Input.Pressed( "Use" ) )
+            Close();
+    }
+
+    void OpenFor( PlayerState dealer )
+    {
+        CurrentDealer = dealer;
+        IsOpen        = true;
+        Mouse.Visible = true;
+        StateHasChanged();
+    }
+
+    void Close()
+    {
+        IsOpen        = false;
+        CurrentDealer = null;
+        Mouse.Visible = false;
+        StateHasChanged();
+    }
+
+    void BuyItem( string itemId )
+    {
+        if ( CurrentDealer is null ) return;
+
+        // Find the local player's ShopInteraction to send the RPC through.
+        var shop = Game.ActiveScene?
+            .GetAllComponents<ShopInteraction>()
+            .FirstOrDefault( s => s.Network.OwnerConnection == Connection.Local );
+
+        shop?.RequestBuy( CurrentDealer.GameObject, itemId, 1 );
+        // Keep shop open — player may want to buy more items.
+        StateHasChanged();
+    }
+
+    static string Hex( Color c )
+        => $"#{(int)(c.r * 255):X2}{(int)(c.g * 255):X2}{(int)(c.b * 255):X2}";
+
+}
+
+<style>
+    /* ── Overlay ─────────────────────────────────────────────── */
+    .sm-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.55);
+    }
+
+    /* ── Panel ───────────────────────────────────────────────── */
+    .sm-panel {
+        width: 640px;
+        max-height: 80%;
+        background-color: #1a1c20;
+        border: 1px solid #333;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        font-family: Poppins, sans-serif;
+    }
+
+    /* ── Header ──────────────────────────────────────────────── */
+    .sm-header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 20px;
+        background-color: #111315;
+        border-bottom: 1px solid #2a2d33;
+    }
+
+    .sm-title-block {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .sm-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: white;
+    }
+
+    .sm-subtitle {
+        font-size: 11px;
+        color: rgba(255,255,255,0.5);
+    }
+
+    .sm-close-btn {
+        background: transparent;
+        border: none;
+        color: rgba(255,255,255,0.5);
+        font-size: 18px;
+        cursor: pointer;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+
+    .sm-close-btn:hover { background-color: rgba(255,255,255,0.1); color: white; }
+
+    /* ── Grid ────────────────────────────────────────────────── */
+    .sm-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 14px;
+        overflow-y: auto;
+    }
+
+    .sm-empty {
+        color: rgba(255,255,255,0.35);
+        font-size: 13px;
+        text-align: center;
+        padding: 20px 0;
+    }
+
+    /* ── Item card ───────────────────────────────────────────── */
+    .sm-card {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        background-color: #22252b;
+        border: 1px solid #2e3138;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .sm-card.sm-broke { opacity: 0.45; }
+
+    .sm-stripe {
+        width: 5px;
+        align-self: stretch;
+        flex-shrink: 0;
+    }
+
+    .sm-body {
+        flex: 1;
+        padding: 10px 10px 10px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .sm-name {
+        font-size: 13px;
+        font-weight: bold;
+    }
+
+    .sm-desc {
+        font-size: 10px;
+        color: rgba(255,255,255,0.5);
+    }
+
+    .sm-meta {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        margin-top: 3px;
+    }
+
+    .sm-cat {
+        font-size: 9px;
+        color: rgba(255,255,255,0.3);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .sm-stack {
+        font-size: 9px;
+        color: rgba(255,255,255,0.25);
+    }
+
+    /* ── Buy button ──────────────────────────────────────────── */
+    .sm-buy-btn {
+        margin: 0 14px;
+        padding: 6px 16px;
+        background-color: #2a6e3a;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        font-size: 13px;
+        font-weight: bold;
+        cursor: pointer;
+        white-space: nowrap;
+        font-family: Poppins, sans-serif;
+    }
+
+    .sm-buy-btn:hover { background-color: #3a8e4e; }
+
+    .sm-buy-disabled {
+        background-color: #3a3a3a;
+        cursor: default;
+        color: rgba(255,255,255,0.35);
+    }
+
+    .sm-buy-disabled:hover { background-color: #3a3a3a; }
+
+    /* ── Footer ──────────────────────────────────────────────── */
+    .sm-footer {
+        padding: 10px 20px;
+        font-size: 10px;
+        color: rgba(255,255,255,0.3);
+        background-color: #111315;
+        border-top: 1px solid #2a2d33;
+        text-align: center;
+    }
+</style>
